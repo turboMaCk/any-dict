@@ -389,7 +389,7 @@ merge f g h (AnyDict inner) (AnyDict { dict }) =
 -- Dict
 
 
-{-| Convert AnyDict to plain dictionary with comparable keys
+{-| Convert `AnyDict` to plain dictionary with comparable keys.
 -}
 toDict : AnyDict comparable k v -> Dict comparable v
 toDict (AnyDict { dict }) =
