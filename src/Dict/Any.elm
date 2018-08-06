@@ -26,21 +26,19 @@ module Dict.Any
         , values
         )
 
-{-| A dictionary mapping unique kays to values.
-Similar and based on `Dict` but without restriction on comparable keys.
+{-| A dictionary mapping unique keys to values.
+Similar and based on Dict but without restriction on comparable keys.
 
 Insert, remove, and query operations all take O(log n) time.
 
-
 # Converting Types to Comparable
 
-When writing function for conversion form type you wan to use for keys to comarable
-it's very important to make sure every distinct member of type k produces different
-value in set o of comparables.
+When writing a function for conversion from the type you want to use for keys to comparable
+it's very important to make sure every distinct member of type k produces different value in set o of comparables.
 
 Take for instance those two examples:
 
-We can use `Bool` as a key for our dict (No matter how unpractical it might seem)
+We can use Bool as a key for our Dict (No matter how unpractical it might seem)
 
     boolToInt : Bool -> Int
     boolToInt bool =
@@ -49,11 +47,11 @@ We can use `Bool` as a key for our dict (No matter how unpractical it might seem
             True -> 1
 
     empty boolToInt
-      |> insert True "foo"
-      |> get True
+    |> insert True "foo"
+    |> get True
     --> Just "foo"
 
-or `Maybe String`.
+or Maybe String.
 
     comparableKey : Maybe String -> (Int, String)
     comparableKey maybe =
@@ -66,13 +64,14 @@ or `Maybe String`.
         |> get (Just "foo")
     --> Just 42
 
-Note that we give `Int` code to either constructor and in Case of Nothing we default to `""` (Empty string).
-There is still difference between `Nothing` and `Just ""` (Int value in pair is different).
-In fact you can "hardcode" any value as second member of pair in case of nothing but empty string seems like an reasonable option
-for this case. Generally this is how I would implemented `toComparable` function for most of your custom data types.
-Have a look at the longest constructor, Define tuple where first key is int (number of constructor) and other are types within constructor
-and you're good to go.
-
+Note that we give Int code to either constructor and in Case of Nothing we default to `""` (empty string).
+There is still a difference between `Nothing` and `Just ""` (`Int` value in the pair is different).
+In fact, you can "hardcode" any value as the second member of the pair
+in case of nothing but empty string seems like a reasonable option for this case.
+Generally, this is how I would implement `toComparable` function for most of your custom data types.
+Have a look at the longest constructor,
+Define tuple where the first key is int (number of the constructor)
+and other are types within the constructor and you're good to go.
 
 # Dictionaries
 
