@@ -31,6 +31,7 @@ Similar and based on Dict but without restriction on comparable keys.
 
 Insert, remove, and query operations all take O(log n) time.
 
+
 # Converting Types to Comparable
 
 When writing a function for conversion from the type you want to use for keys to comparable
@@ -72,6 +73,7 @@ Generally, this is how I would implement `toComparable` function for most of you
 Have a look at the longest constructor,
 Define tuple where the first key is int (number of the constructor)
 and other are types within the constructor and you're good to go.
+
 
 # Dictionaries
 
@@ -162,10 +164,10 @@ insert k v (AnyDict inner) =
 update : k -> (Maybe v -> Maybe v) -> AnyDict comparable k v -> AnyDict comparable k v
 update k f (AnyDict inner) =
     let
-        update =
-            Maybe.map ((,) k) << f << Maybe.map Tuple.second
+        updateDict =
+            Maybe.map (\b -> ( k, b )) << f << Maybe.map Tuple.second
     in
-    AnyDict { inner | dict = Dict.update (inner.toKey k) update inner.dict }
+    AnyDict { inner | dict = Dict.update (inner.toKey k) updateDict inner.dict }
 
 
 {-| Remove a key-value pair from a dictionary.
@@ -291,8 +293,11 @@ fromList f xs =
 {-| Apply a function to all values in a dictionary.
 -}
 map : (a -> b -> c) -> AnyDict comparable a b -> AnyDict comparable a c
-map f (AnyDict inner) =
-    AnyDict { inner | dict = Dict.map (\_ ( k, v ) -> ( k, f k v )) inner.dict }
+map f (AnyDict { dict, toKey }) =
+    AnyDict
+        { dict = Dict.map (\_ ( k, v ) -> ( k, f k v )) dict
+        , toKey = toKey
+        }
 
 
 {-| Fold over the key-value pairs in a dictionary, in order from lowest key to highest key.
