@@ -129,7 +129,7 @@ type AnyDict comparable k v
 {-| Create an empty dictionary by suppling function used for comparing keys.
 
 ** Note that it's important to make sure every key is turned to different comparable.
-Otherwise keys would conflict and overwritede each other.**
+Otherwise keys would conflict and overwrite each other.**
 
 -}
 empty : (k -> comparable) -> AnyDict comparable k v
@@ -143,7 +143,7 @@ empty toKey =
 {-| Create a dictionary with one key-value pair.
 
 ** Note that it's important to make sure every key is turned to different comparable.
-Otherwise keys would conflict and overwritede each other.**
+Otherwise keys would conflict and overwrite each other.**
 
 -}
 singleton : k -> v -> (k -> comparable) -> AnyDict comparable k v
@@ -275,7 +275,7 @@ toList (AnyDict { dict }) =
 {-| Convert an association list into a dictionary.
 
 ** Note that it's important to make sure every key is turned to different comparable.
-Otherwise keys would conflict and overwritede each other.**
+Otherwise keys would conflict and overwrite each other.**
 
 -}
 fromList : (k -> comparable) -> List ( k, v ) -> AnyDict comparable k v
