@@ -1,30 +1,12 @@
-module Dict.Any
-    exposing
-        ( AnyDict
-        , diff
-        , empty
-        , filter
-        , foldl
-        , foldr
-        , fromList
-        , get
-        , insert
-        , intersect
-        , isEmpty
-        , keys
-        , map
-        , member
-        , merge
-        , partition
-        , remove
-        , singleton
-        , size
-        , toDict
-        , toList
-        , union
-        , update
-        , values
-        )
+module Dict.Any exposing
+    ( AnyDict
+    , empty, singleton, insert, update, remove
+    , isEmpty, member, get, size, toKey
+    , keys, values, toList, fromList
+    , map, foldl, foldr, filter, partition
+    , union, intersect, diff, merge
+    , toDict
+    )
 
 {-| A dictionary mapping unique keys to values.
 Similar and based on Dict but without restriction on comparable keys.
@@ -87,7 +69,7 @@ and other are types within the constructor and you're good to go.
 
 # Query
 
-@docs isEmpty, member, get, size
+@docs isEmpty, member, get, size, toKey
 
 
 # Lists
@@ -128,22 +110,22 @@ type AnyDict comparable k v
 
 {-| Create an empty dictionary by suppling function used for comparing keys.
 
-** Note that it's important to make sure every key is turned to different comparable.
-Otherwise keys would conflict and overwrite each other.**
+\*\* Note that it's important to make sure every key is turned to different comparable.
+Otherwise keys would conflict and overwrite each other.\*\*
 
 -}
 empty : (k -> comparable) -> AnyDict comparable k v
-empty toKey =
+empty toKey_ =
     AnyDict
         { dict = Dict.empty
-        , toKey = toKey
+        , toKey = toKey_
         }
 
 
 {-| Create a dictionary with one key-value pair.
 
-** Note that it's important to make sure every key is turned to different comparable.
-Otherwise keys would conflict and overwrite each other.**
+\*\* Note that it's important to make sure every key is turned to different comparable.
+Otherwise keys would conflict and overwrite each other.\*\*
 
 -}
 singleton : k -> v -> (k -> comparable) -> AnyDict comparable k v
@@ -200,8 +182,8 @@ isEmpty (AnyDict { dict }) =
 {-| Determine if a key is in a dictionary.
 -}
 member : k -> AnyDict comparable k v -> Bool
-member k (AnyDict { dict, toKey }) =
-    Dict.member (toKey k) dict
+member k (AnyDict d) =
+    Dict.member (d.toKey k) d.dict
 
 
 {-| Get the value associated with a key.
@@ -234,8 +216,8 @@ if a key will be in the dictionary.
 
 -}
 get : k -> AnyDict comparable k v -> Maybe v
-get k (AnyDict { dict, toKey }) =
-    Dict.get (toKey k) dict
+get k (AnyDict d) =
+    Dict.get (d.toKey k) d.dict
         |> Maybe.map Tuple.second
 
 
@@ -244,6 +226,13 @@ get k (AnyDict { dict, toKey }) =
 size : AnyDict comparable k v -> Int
 size (AnyDict { dict }) =
     Dict.size dict
+
+
+{-| Retrieve the function used to convert keys to comparable values.
+-}
+toKey : AnyDict comparable k v -> (k -> comparable)
+toKey (AnyDict d) =
+    d.toKey
 
 
 
@@ -274,8 +263,8 @@ toList (AnyDict { dict }) =
 
 {-| Convert an association list into a dictionary.
 
-** Note that it's important to make sure every key is turned to different comparable.
-Otherwise keys would conflict and overwrite each other.**
+\*\* Note that it's important to make sure every key is turned to different comparable.
+Otherwise keys would conflict and overwrite each other.\*\*
 
 -}
 fromList : (k -> comparable) -> List ( k, v ) -> AnyDict comparable k v
@@ -293,10 +282,10 @@ fromList f xs =
 {-| Apply a function to all values in a dictionary.
 -}
 map : (a -> b -> c) -> AnyDict comparable a b -> AnyDict comparable a c
-map f (AnyDict { dict, toKey }) =
+map f (AnyDict d) =
     AnyDict
-        { dict = Dict.map (\_ ( k, v ) -> ( k, f k v )) dict
-        , toKey = toKey
+        { dict = Dict.map (\_ ( k, v ) -> ( k, f k v )) d.dict
+        , toKey = d.toKey
         }
 
 
