@@ -1,30 +1,12 @@
-module Dict.Any
-    exposing
-        ( AnyDict
-        , diff
-        , empty
-        , filter
-        , foldl
-        , foldr
-        , fromList
-        , get
-        , insert
-        , intersect
-        , isEmpty
-        , keys
-        , map
-        , member
-        , merge
-        , partition
-        , remove
-        , singleton
-        , size
-        , toDict
-        , toList
-        , union
-        , update
-        , values
-        )
+module Dict.Any exposing
+    ( AnyDict
+    , empty, singleton, insert, update, remove, removeAll
+    , isEmpty, member, get, size
+    , keys, values, toList, fromList
+    , map, foldl, foldr, filter, partition
+    , union, intersect, diff, merge
+    , toDict
+    )
 
 {-| A dictionary mapping unique keys to values.
 Similar and based on Dict but without restriction on comparable keys.
@@ -82,7 +64,7 @@ and other are types within the constructor and you're good to go.
 
 # Build
 
-@docs empty, singleton, insert, update, remove
+@docs empty, singleton, insert, update, remove, removeAll
 
 
 # Query
@@ -114,7 +96,12 @@ and other are types within the constructor and you're good to go.
 import Dict exposing (Dict)
 
 
-{-| -}
+{-| Be aware that AnyDict stores a function internally.
+
+If you want to use `(==)` for comparing two AnyDicts
+use [toDict](#toDict) function to convert them to regular `Dict` first.
+
+-}
 type AnyDict comparable k v
     = AnyDict
         { dict : Dict comparable ( k, v )
@@ -128,8 +115,8 @@ type AnyDict comparable k v
 
 {-| Create an empty dictionary by suppling function used for comparing keys.
 
-** Note that it's important to make sure every key is turned to different comparable.
-Otherwise keys would conflict and overwrite each other.**
+** Note that it's important to make sure every key is turned to different comparable.**
+Otherwise keys would conflict and overwrite each other.
 
 -}
 empty : (k -> comparable) -> AnyDict comparable k v
@@ -142,8 +129,8 @@ empty toKey =
 
 {-| Create a dictionary with one key-value pair.
 
-** Note that it's important to make sure every key is turned to different comparable.
-Otherwise keys would conflict and overwrite each other.**
+** Note that it's important to make sure every key is turned to different comparable.**
+Otherwise keys would conflict and overwrite each other.
 
 -}
 singleton : k -> v -> (k -> comparable) -> AnyDict comparable k v
@@ -176,6 +163,17 @@ If the key is not found, no changes are made.
 remove : k -> AnyDict comparable k v -> AnyDict comparable k v
 remove k (AnyDict inner) =
     AnyDict { inner | dict = Dict.remove (inner.toKey k) inner.dict }
+
+
+{-| Remove all entries from AnyDict.
+
+Useful when you need to create new empty AnyDict using
+same comparable function for key type.
+
+-}
+removeAll : AnyDict comperable k v -> AnyDict comparable k v
+removeAll (AnyDict inner) =
+    AnyDict { inner | dict = Dict.empty }
 
 
 
@@ -274,8 +272,8 @@ toList (AnyDict { dict }) =
 
 {-| Convert an association list into a dictionary.
 
-** Note that it's important to make sure every key is turned to different comparable.
-Otherwise keys would conflict and overwrite each other.**
+** Note that it's important to make sure every key is turned to different comparable.**
+Otherwise keys would conflict and overwrite each other.
 
 -}
 fromList : (k -> comparable) -> List ( k, v ) -> AnyDict comparable k v
