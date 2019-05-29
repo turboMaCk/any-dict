@@ -171,7 +171,7 @@ Useful when you need to create new empty AnyDict using
 same comparable function for key type.
 
 -}
-removeAll : AnyDict comperable k v -> AnyDict comparable k v
+removeAll : AnyDict comparable k v -> AnyDict comparable k v
 removeAll (AnyDict inner) =
     AnyDict { inner | dict = Dict.empty }
 

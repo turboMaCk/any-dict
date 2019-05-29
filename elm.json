@@ -3,7 +3,7 @@
     "name": "turboMaCk/any-dict",
     "summary": "Elm dictionary with custom key types.",
     "license": "BSD-3-Clause",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "exposed-modules": [
         "Dict.Any"
     ],
