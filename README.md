@@ -1,8 +1,8 @@
 # AnyDict
 
-This library implements thin wrapper over standard implementation
+This library implements a thin wrapper around implementation
 of a dictionary from the core library to make it possible to
-use it in a fairly type-safe way with any type used for keys.
+use it in a fairly type-safe way with keys of any type,
 
 It solves the same problem as [elm-all-dict](http://package.elm-lang.org/packages/eeue56/elm-all-dict/latest) just in a very much different way
 without any Kernel (Native) code and on top of existing and well tested
