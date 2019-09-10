@@ -242,9 +242,9 @@ get k (AnyDict { dict, toKey }) =
 
 {-| Get a key associated with key.
 
-This is useful in case of any dict because
-some parts of a key might which are not used
-for generating comparable might be updated within the dict.
+This is useful in case of `AnyDict` because
+some parts of a key might not be used
+for generating comparable.
 This function allows quering `AnyDict` with old
 key to obtain updated one in such cases.
 
