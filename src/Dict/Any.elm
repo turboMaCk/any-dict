@@ -1,7 +1,7 @@
 module Dict.Any exposing
     ( AnyDict
     , empty, singleton, insert, update, remove, removeAll
-    , isEmpty, member, get, size
+    , isEmpty, member, get, getKey, size
     , keys, values, toList, fromList
     , map, foldl, foldr, filter, partition
     , union, intersect, diff, merge
@@ -69,7 +69,7 @@ and other are types within the constructor and you're good to go.
 
 # Query
 
-@docs isEmpty, member, get, size
+@docs isEmpty, member, get, getKey, size
 
 
 # Lists
@@ -238,6 +238,21 @@ get : k -> AnyDict comparable k v -> Maybe v
 get k (AnyDict { dict, toKey }) =
     Dict.get (toKey k) dict
         |> Maybe.map Tuple.second
+
+
+{-| Get a key associated with key.
+
+This is useful in case of any dict because
+some parts of a key might which are not used
+for generating comparable might be updated within the dict.
+This function allows quering `AnyDict` with old
+key to obtain updated one in such cases.
+
+-}
+getKey : k -> AnyDict comparable k v -> Maybe k
+getKey k (AnyDict { dict, toKey }) =
+    Dict.get (toKey k) dict
+        |> Maybe.map Tuple.first
 
 
 {-| Determine the number of key-value pairs in the dictionary.
