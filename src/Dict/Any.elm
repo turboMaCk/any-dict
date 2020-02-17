@@ -6,7 +6,7 @@ module Dict.Any exposing
     , map, foldl, foldr, filter, partition
     , union, intersect, diff, merge
     , toDict
-    , encode, decode
+    , decode, encode
     )
 
 {-| A dictionary mapping unique keys to values.
@@ -95,7 +95,7 @@ and other are types within the constructor and you're good to go.
 
 # Json
 
-@docs encode, decode
+@docs decode, encode
 
 -}
 
@@ -425,16 +425,7 @@ toDict (AnyDict { dict }) =
     Dict.map (always Tuple.second) dict
 
 
-{-| yeah
--}
-encode : (k -> String) -> (v -> Encode.Value) -> AnyDict comparable k v -> Encode.Value
-encode keyE valueE =
-    Encode.object
-        << List.map (Tuple.mapBoth keyE valueE)
-        << toList
-
-
-{-| decode
+{-| Decode a JSON object into an `AnyDict`.
 -}
 decode : (String -> v -> k) -> (k -> comparable) -> Decode.Decoder v -> Decode.Decoder (AnyDict comparable k v)
 decode fromStr toComparable valueD =
@@ -444,3 +435,12 @@ decode fromStr toComparable valueD =
     in
     Decode.dict valueD
         |> Decode.map (Dict.foldr construct (empty toComparable))
+
+
+{-| Turn an `AnyDict` into a JSON object.
+-}
+encode : (k -> String) -> (v -> Encode.Value) -> AnyDict comparable k v -> Encode.Value
+encode keyE valueE =
+    Encode.object
+        << List.map (Tuple.mapBoth keyE valueE)
+        << toList
