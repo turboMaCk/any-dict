@@ -1,5 +1,5 @@
 module Dict.Any exposing
-    ( AnyDict
+    ( AnyDict, equal
     , empty, singleton, insert, update, remove, removeAll
     , isEmpty, member, get, getKey, size
     , keys, values, toList, fromList
@@ -60,7 +60,7 @@ and other are types within the constructor and you're good to go.
 
 # Dictionaries
 
-@docs AnyDict
+@docs AnyDict, equal
 
 
 # Build
