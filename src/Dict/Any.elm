@@ -107,7 +107,7 @@ import Json.Encode as Encode
 {-| Be aware that AnyDict stores a function internally.
 
 If you want to use `(==)` for comparing two AnyDicts
-use [toDict](#toDict) function to convert them to regular `Dict` first.
+use [equal](#qual) function.
 
 -}
 type AnyDict comparable k v
@@ -115,6 +115,13 @@ type AnyDict comparable k v
         { dict : Dict comparable ( k, v )
         , toKey : k -> comparable
         }
+
+
+{-| Check equality on two `AnyDict`s
+-}
+equal : AnyDict comparable k v -> AnyDict comparable k v -> Bool
+equal (AnyDict r1) (AnyDict r2) =
+    r1.dict == r2.dict
 
 
 
