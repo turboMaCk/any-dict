@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: sparksp/elm-format-action@v1
       - uses: jorelali/setup-elm@v2
-      with:
+        with:
           elm-version: 0.19.1
       - run: elm make
       - run: elm-verify-examples -r
