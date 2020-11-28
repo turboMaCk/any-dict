@@ -121,6 +121,7 @@ type AnyDict comparable k v
 
     * returns `True` if AnyDicts are equal
     * returns `False` if AnyDicts are not equal
+
 -}
 equal : AnyDict comparable k v -> AnyDict comparable k v -> Bool
 equal (AnyDict r1) (AnyDict r2) =
