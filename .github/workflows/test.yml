@@ -8,10 +8,6 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: jorelali/setup-elm@v2
-      - run: yarn install -g elm-format elm-test elm-verify-examples
-      - uses: sparksp/elm-format-action@v1
-        with:
-          elm-version: 0.19.1
-      - run: elm make
-      - run: elm-verify-examples -r
+      - uses: actions/checkout@v2.3.1
+      - uses: cachix/install-nix-action@v11
+      - run: nix-shell --run "elm-verify-examples -r"
