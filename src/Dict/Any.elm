@@ -566,6 +566,7 @@ decode_ fromStr toComparable valueD =
     |> encodeData
     |> Json.Encode.encode 0
     --> "{\"bar\":2,\"foo\":1}"
+
 -}
 encode : (k -> String) -> (v -> Encode.Value) -> AnyDict comparable k v -> Encode.Value
 encode keyE valueE =
