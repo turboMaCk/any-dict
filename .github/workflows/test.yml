@@ -5,11 +5,12 @@ on:
   push:
 
 jobs:
-  runs-on: ubuntu-latest
-  steps:
-    - uses: sparksp/elm-format-action@v1
-    - uses: jorelali/setup-elm@v2
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: sparksp/elm-format-action@v1
+      - uses: jorelali/setup-elm@v2
       with:
-        elm-version: 0.19.1
-    - run: elm make
-    - run: elm-verify-examples -r
+          elm-version: 0.19.1
+      - run: elm make
+      - run: elm-verify-examples -r
