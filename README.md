@@ -1,5 +1,7 @@
 # AnyDict
 
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2FturboMaCk%2Fany-dict%2Fbadge&style=flat)](https://actions-badge.atrox.dev/turboMaCk/any-dict/goto)
+
 This library implements a thin wrapper around implementation
 of a dictionary from the core library to make it possible to
 use it in a fairly type-safe way with keys of any type,
