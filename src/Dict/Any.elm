@@ -6,7 +6,7 @@ module Dict.Any exposing
     , map, foldl, foldr, filter, partition
     , union, intersect, diff, merge
     , toDict
-    , decode, decode_, encode
+    , decode, decode_, encode, encodeAsTuples, decodeFromTuples
     )
 
 {-| A dictionary mapping unique keys to values.
@@ -95,7 +95,7 @@ and other are types within the constructor and you're good to go.
 
 # Json
 
-@docs decode, decode_, encode
+@docs decode, decode_, encode, encodeAsTuples, decodeFromTuples
 
 -}
 
@@ -573,3 +573,47 @@ encode keyE valueE =
     Encode.object
         << List.map (Tuple.mapBoth keyE valueE)
         << toList
+
+
+{-| Turn an AnyDict into a JSON list of tuples. This is useful when you have more complex types as keys
+
+    import Json.Decode as Decode
+    import Json.Encode as Encode
+
+    type alias Person = {first : String, last : String}
+    type alias Age = Int
+
+    personToString : Person -> String
+    personToString {first, last} = first ++ last
+
+    personEncode : Person -> Encode.Value
+    personEncode {first, last} = Encode.object [("first", (Encode.string first)), ("last", (Encode.string last))]
+
+    personDecode : Decode.Decoder Person
+    personDecode =
+        Decode.map2
+            Person
+                (Decode.field "first" Decode.string)
+                (Decode.field "last" Decode.string)
+
+    example : Dict.Any.AnyDict String Person Age
+    example = Dict.Any.fromList
+        personToString [(Person "Jeve" "Sobs", 9001), (Person "Tim" "Berners-Lee", 1234)]
+
+    encodeAsTuples personEncode Encode.int example
+        |> Decode.decodeValue (decodeFromTuples personToString personDecode Decode.int)
+        --> Ok example
+
+-}
+encodeAsTuples : (k -> Encode.Value) -> (v -> Encode.Value) -> Dict.Any.AnyDict comparable k v -> Encode.Value
+encodeAsTuples keyEncoder valueEncoder =
+    Dict.Any.toList
+        >> Encode.list (\( k, v ) -> Encode.list identity [ keyEncoder k, valueEncoder v ])
+
+
+{-| Decode an AnyDict from a JSON list of tuples.
+-}
+decodeFromTuples : (k -> comparable) -> Decode.Decoder k -> Decode.Decoder v -> Decode.Decoder (Dict.Any.AnyDict comparable k v)
+decodeFromTuples keyToComparable keyDecoder valueDecoder =
+    Decode.list (Decode.map2 Tuple.pair (Decode.index 0 keyDecoder) (Decode.index 1 valueDecoder))
+        |> Decode.map (Dict.Any.fromList keyToComparable)
