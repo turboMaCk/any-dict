@@ -6,7 +6,7 @@ module Dict.Any exposing
     , map, foldl, foldr, filter, partition
     , union, intersect, diff, merge
     , toDict
-    , decode, encode
+    , decode, decode_, encode
     )
 
 {-| A dictionary mapping unique keys to values.
@@ -95,7 +95,7 @@ and other are types within the constructor and you're good to go.
 
 # Json
 
-@docs decode, encode
+@docs decode, decode_, encode
 
 -}
 
@@ -437,6 +437,41 @@ toDict (AnyDict { dict }) =
 
 
 {-| Decode a JSON object into an `AnyDict`.
+
+This encoder is limitted for cases where JSON representation
+for a given type is an JSON Object. In JSON, the keys within object must be
+`String`.
+If you need to decode different representation into `AnyDict` value,
+just use primitive `Decoder` types directly and map `AnyDict` constructors
+over these.
+
+    import Json.Decode
+
+    type Key = Foo | Bar
+
+    fromString : String -> Key
+    fromString str =
+       case str of
+          "foo" -> Foo
+          _     -> Bar
+
+    toString : Key -> String
+    toString key =
+      case key of
+         Foo -> "foo"
+         Bar -> "bar"
+
+    type alias Data = AnyDict String Key Int
+
+    dataDecoder : Json.Decode.Decoder Data
+    dataDecoder =
+       decode (\str _ -> fromString str) toString Json.Decode.int
+
+
+    Json.Decode.decodeString dataDecoder "{\"foo\":1,\"bar\":2}"
+    |> Result.map toList
+    --> Ok [(Bar, 2), (Foo, 1)]
+
 -}
 decode : (String -> v -> k) -> (k -> comparable) -> Decode.Decoder v -> Decode.Decoder (AnyDict comparable k v)
 decode fromStr toComparable valueD =
@@ -448,7 +483,90 @@ decode fromStr toComparable valueD =
         |> Decode.map (Dict.foldr construct (empty toComparable))
 
 
+{-| Decode a JSON object into an `AnyDict`.
+
+This variant of decode allows you to fail with error while parsing key from String.
+In such case whole Dict decoding will fail.
+
+    import Json.Decode
+
+    type Key = Foo | Bar
+
+    fromString : String -> Result String Key
+    fromString str =
+       case str of
+          "foo" -> Ok Foo
+          "bar" -> Ok Bar
+          _     -> Err <| "Unknown key " ++ str
+
+    toString : Key -> String
+    toString key =
+      case key of
+         Foo -> "foo"
+         Bar -> "bar"
+
+    type alias Data = AnyDict String Key Int
+
+    dataDecoder : Json.Decode.Decoder Data
+    dataDecoder =
+       decode_ (\str _ -> fromString str) toString Json.Decode.int
+
+
+    Json.Decode.decodeString dataDecoder "{\"foo\":1,\"bar\":2}"
+    |> Result.map toList
+    --> Ok [(Bar, 2), (Foo, 1)]
+
+    Json.Decode.decodeString dataDecoder "{\"foo\":1,\"baz\":2}"
+    |> Result.map toList
+    --> Json.Decode.decodeString (Json.Decode.fail "Unknown key baz") "{}"
+
+-}
+decode_ : (String -> v -> Result String k) -> (k -> comparable) -> Decode.Decoder v -> Decode.Decoder (AnyDict comparable k v)
+decode_ fromStr toComparable valueD =
+    let
+        construct strK v =
+            Result.andThen
+                (\acc ->
+                    fromStr strK v
+                        |> Result.map (\key -> insert key v acc)
+                )
+    in
+    Decode.dict valueD
+        |> Decode.map (Dict.foldr construct (Ok <| empty toComparable))
+        |> Decode.andThen
+            (\res ->
+                case res of
+                    Ok val ->
+                        Decode.succeed val
+
+                    Err err ->
+                        Decode.fail err
+            )
+
+
 {-| Turn an `AnyDict` into a JSON object.
+
+    import Json.Encode
+
+    type Key = Foo | Bar
+
+    toString : Key -> String
+    toString key =
+      case key of
+         Foo -> "foo"
+         Bar -> "bar"
+
+    type alias Data = AnyDict String Key Int
+
+    encodeData : Data -> Json.Encode.Value
+    encodeData =
+      encode toString Json.Encode.int
+
+    fromList toString [(Foo, 1), (Bar, 2)]
+    |> encodeData
+    |> Json.Encode.encode 0
+    --> "{\"bar\":2,\"foo\":1}"
+
 -}
 encode : (k -> String) -> (v -> Encode.Value) -> AnyDict comparable k v -> Encode.Value
 encode keyE valueE =
