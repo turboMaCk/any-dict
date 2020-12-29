@@ -6,7 +6,7 @@ module Dict.Any exposing
     , map, foldl, foldr, filter, partition
     , union, intersect, diff, merge
     , toDict
-    , decode, decode_, encode, encodeAsTuples, decodeFromTuples
+    , decode, decode_, encode, encodeAsTuples, decodeList
     )
 
 {-| A dictionary mapping unique keys to values.
@@ -95,7 +95,7 @@ and other are types within the constructor and you're good to go.
 
 # Json
 
-@docs decode, decode_, encode, encodeAsTuples, decodeFromTuples
+@docs decode, decode_, encode, encodeAsTuples, decodeList
 
 -}
 
@@ -596,24 +596,24 @@ encode keyE valueE =
                 (Decode.field "first" Decode.string)
                 (Decode.field "last" Decode.string)
 
-    example : Dict.Any.AnyDict String Person Age
-    example = Dict.Any.fromList
+    example : AnyDict String Person Age
+    example = fromList
         personToString [(Person "Jeve" "Sobs", 9001), (Person "Tim" "Berners-Lee", 1234)]
 
     encodeAsTuples personEncode Encode.int example
-        |> Decode.decodeValue (decodeFromTuples personToString personDecode Decode.int)
+        |> Decode.decodeValue (decodeList personToString personDecode Decode.int)
         --> Ok example
 
 -}
-encodeAsTuples : (k -> Encode.Value) -> (v -> Encode.Value) -> Dict.Any.AnyDict comparable k v -> Encode.Value
+encodeAsTuples : (k -> Encode.Value) -> (v -> Encode.Value) -> AnyDict comparable k v -> Encode.Value
 encodeAsTuples keyEncoder valueEncoder =
-    Dict.Any.toList
+    toList
         >> Encode.list (\( k, v ) -> Encode.list identity [ keyEncoder k, valueEncoder v ])
 
 
 {-| Decode an AnyDict from a JSON list of tuples.
 -}
-decodeFromTuples : (k -> comparable) -> Decode.Decoder k -> Decode.Decoder v -> Decode.Decoder (Dict.Any.AnyDict comparable k v)
-decodeFromTuples keyToComparable keyDecoder valueDecoder =
+decodeList : (k -> comparable) -> Decode.Decoder k -> Decode.Decoder v -> Decode.Decoder (AnyDict comparable k v)
+decodeList keyToComparable keyDecoder valueDecoder =
     Decode.list (Decode.map2 Tuple.pair (Decode.index 0 keyDecoder) (Decode.index 1 valueDecoder))
-        |> Decode.map (Dict.Any.fromList keyToComparable)
+        |> Decode.map (fromList keyToComparable)
