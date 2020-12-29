@@ -13,4 +13,5 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
       - run: nix-shell --run "elm-format --validate src"
+      - run: nix-shell --run "elm make"
       - run: nix-shell --run "elm-verify-examples -r"
