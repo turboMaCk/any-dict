@@ -6,7 +6,7 @@ module Dict.Any exposing
     , map, foldl, foldr, filter, partition
     , union, intersect, diff, merge
     , toDict
-    , decode, decode_, encode, encodeAsTuples, decodeList
+    , decode, decode_, encode, decodeList, encodeList
     )
 
 {-| A dictionary mapping unique keys to values.
@@ -95,7 +95,7 @@ and other are types within the constructor and you're good to go.
 
 # Json
 
-@docs decode, decode_, encode, encodeAsTuples, decodeList
+@docs decode, decode_, encode, decodeList, encodeList
 
 -}
 
@@ -600,15 +600,14 @@ encode keyE valueE =
     example = fromList
         personToString [(Person "Jeve" "Sobs", 9001), (Person "Tim" "Berners-Lee", 1234)]
 
-    encodeAsTuples personEncode Encode.int example
+    encodeList (\k v -> Encode.list identity [ personEncode k, Encode.int v]) example
         |> Decode.decodeValue (decodeList personToString (Decode.index 0 personDecode) (Decode.index 1 Decode.int))
         --> Ok example
 
 -}
-encodeAsTuples : (k -> Encode.Value) -> (v -> Encode.Value) -> AnyDict comparable k v -> Encode.Value
-encodeAsTuples keyEncoder valueEncoder =
-    toList
-        >> Encode.list (\( k, v ) -> Encode.list identity [ keyEncoder k, valueEncoder v ])
+encodeList : (k -> v -> Encode.Value) -> AnyDict comparable k v -> Encode.Value
+encodeList itemEncoder =
+    Encode.list (\( k, v ) -> itemEncoder k v) << toList
 
 
 {-| Decode an AnyDict from a JSON list of tuples.
