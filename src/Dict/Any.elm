@@ -106,8 +106,9 @@ import Json.Encode as Encode
 
 {-| Be aware that AnyDict stores a function internally.
 
-If you want to use `(==)` for comparing two AnyDicts
-use [equal](#qual) function.
+Use [`equal`](#equal) function to check equality of two `AnyDict`s.
+Using `(==)` would result in runtime exception because `AnyDict` type
+contains a function.
 
 -}
 type AnyDict comparable k v
@@ -439,7 +440,7 @@ toDict (AnyDict { dict }) =
 {-| Decode a JSON object into an `AnyDict`.
 
 This encoder is limitted for cases where JSON representation
-for a given type is an JSON Object. In JSON, the keys within object must be
+for a given type is an JSON Object. In JSON, object keys must be of type
 `String`.
 If you need to decode different representation into `AnyDict` value,
 just use primitive `Decoder` types directly and map `AnyDict` constructors
