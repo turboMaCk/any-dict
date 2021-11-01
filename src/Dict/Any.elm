@@ -601,8 +601,8 @@ encode keyE valueE =
     example = fromList
         personToString [(Person "Jeve" "Sobs", 9001), (Person "Tim" "Berners-Lee", 1234)]
 
-    encodeAsTuples personEncode Encode.int example
-        |> Decode.decodeValue (decodeList personToString personDecode Decode.int)
+    encodeList (\k v -> Encode.list identity [ personEncode k, Encode.int v ]) example
+        |> Decode.decodeValue (decodeList personToString (Decode.map2 Tuple.pair (Decode.index 0 personDecode) (Decode.index 1 Decode.int)))
         --> Ok example
 
 -}
