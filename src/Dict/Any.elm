@@ -605,15 +605,14 @@ encode keyE valueE =
         --> Ok example
 
 -}
-encodeAsTuples : (k -> Encode.Value) -> (v -> Encode.Value) -> AnyDict comparable k v -> Encode.Value
-encodeAsTuples keyEncoder valueEncoder =
-    toList
-        >> Encode.list (\( k, v ) -> Encode.list identity [ keyEncoder k, valueEncoder v ])
+encodeList : (k -> v -> Encode.Value) -> AnyDict comparable k v -> Encode.Value
+encodeList encode =
+    Encode.list (\( k, v ) -> encode k v) << toList
 
 
 {-| Decode an AnyDict from a JSON list of tuples.
 -}
-decodeList : (k -> comparable) -> Decode.Decoder k -> Decode.Decoder v -> Decode.Decoder (AnyDict comparable k v)
-decodeList keyToComparable keyDecoder valueDecoder =
-    Decode.list (Decode.map2 Tuple.pair (Decode.index 0 keyDecoder) (Decode.index 1 valueDecoder))
+decodeList : (k -> comparable) -> Decode.Decoder ( k, v ) -> Decode.Decoder (AnyDict comparable k v)
+decodeList keyToComparable decoder =
+    Decode.list decoder
         |> Decode.map (fromList keyToComparable)
