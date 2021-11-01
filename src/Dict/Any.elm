@@ -588,22 +588,16 @@ encode keyE valueE =
     personToString {first, last} = first ++ last
 
     personEncode : Person -> Encode.Value
-    personEncode {first, last} = Encode.object [("first", (Encode.string first)), ("last", (Encode.string last))]
-
-    personDecode : Decode.Decoder Person
-    personDecode =
-        Decode.map2
-            Person
-                (Decode.field "first" Decode.string)
-                (Decode.field "last" Decode.string)
+    personEncode {first, last} =
+        Encode.object [("first", (Encode.string first)), ("last", (Encode.string last))]
 
     example : AnyDict String Person Age
-    example = fromList
-        personToString [(Person "Jeve" "Sobs", 9001), (Person "Tim" "Berners-Lee", 1234)]
+    example =
+        fromList personToString [(Person "Jeve" "Sobs", 9001), (Person "Tim" "Berners-Lee", 1234)]
 
     encodeList (\k v -> Encode.list identity [ personEncode k, Encode.int v ]) example
-        |> Decode.decodeValue (decodeList personToString (Decode.map2 Tuple.pair (Decode.index 0 personDecode) (Decode.index 1 Decode.int)))
-        --> Ok example
+        |> Encode.encode 0
+        --> "[[{\"first\":\"Jeve\",\"last\":\"Sobs\"},9001],[{\"first\":\"Tim\",\"last\":\"Berners-Lee\"},1234]]"
 
 -}
 encodeList : (k -> v -> Encode.Value) -> AnyDict comparable k v -> Encode.Value
@@ -612,6 +606,27 @@ encodeList encodeF =
 
 
 {-| Decode an AnyDict from a JSON list of tuples.
+
+    import Json.Decode as Decode
+    import Json.Encode as Encode
+
+    type alias Person = {first : String, last : String}
+    type alias Age = Int
+
+    personToString : Person -> String
+    personToString {first, last} = first ++ last
+
+    personDecode : Decode.Decoder Person
+    personDecode =
+        Decode.map2
+            Person
+                (Decode.field "first" Decode.string)
+                (Decode.field "last" Decode.string)
+
+    "[[{\"first\":\"Jeve\",\"last\":\"Sobs\"},9001],[{\"first\":\"Tim\",\"last\":\"Berners-Lee\"},1234]]"
+        |> Decode.decodeString (decodeList personToString (Decode.map2 Tuple.pair (Decode.index 0 personDecode) (Decode.index 1 Decode.int)))
+        --> Ok (fromList personToString [(Person "Jeve" "Sobs", 9001), (Person "Tim" "Berners-Lee", 1234)])
+
 -}
 decodeList : (k -> comparable) -> Decode.Decoder ( k, v ) -> Decode.Decoder (AnyDict comparable k v)
 decodeList keyToComparable =
