@@ -6,8 +6,7 @@ module Dict.Any exposing
     , map, foldl, foldr, filter, partition
     , union, intersect, diff, merge
     , toDict
-    , decode, decode_, encode, decodeList
-    , encodeList
+    , decode, decode_, decodeList, encode, encodeList
     )
 
 {-| A dictionary mapping unique keys to values.
@@ -96,7 +95,7 @@ and other are types within the constructor and you're good to go.
 
 # Json
 
-@docs decode, decode_, encode, encodeAsTuples, decodeList
+@docs decode, decode_, decodeList, encode, encodeList
 
 -}
 
