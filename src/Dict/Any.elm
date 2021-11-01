@@ -6,7 +6,8 @@ module Dict.Any exposing
     , map, foldl, foldr, filter, partition
     , union, intersect, diff, merge
     , toDict
-    , decode, decode_, encode, encodeAsTuples, decodeList
+    , decode, decode_, encode, decodeList
+    , encodeList
     )
 
 {-| A dictionary mapping unique keys to values.
@@ -606,13 +607,12 @@ encode keyE valueE =
 
 -}
 encodeList : (k -> v -> Encode.Value) -> AnyDict comparable k v -> Encode.Value
-encodeList encode =
-    Encode.list (\( k, v ) -> encode k v) << toList
+encodeList encodeF =
+    Encode.list (\( k, v ) -> encodeF k v) << toList
 
 
 {-| Decode an AnyDict from a JSON list of tuples.
 -}
 decodeList : (k -> comparable) -> Decode.Decoder ( k, v ) -> Decode.Decoder (AnyDict comparable k v)
-decodeList keyToComparable decoder =
-    Decode.list decoder
-        |> Decode.map (fromList keyToComparable)
+decodeList keyToComparable =
+    Decode.map (fromList keyToComparable) << Decode.list
