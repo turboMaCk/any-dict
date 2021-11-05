@@ -730,7 +730,7 @@ all predicate dict =
         dict
 
 
-{-| Find out if all instances of a Dictionary match a predicate.
+{-| Filter out certain values. You can combine filter and map with this one function.
 
     type Animal = Cat | Mouse | Dog
 
