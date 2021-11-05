@@ -1,10 +1,10 @@
 module Dict.Any exposing
     ( AnyDict, equal
     , empty, singleton, insert, update, remove, removeAll
-    , isEmpty, member, get, getKey, size
+    , isEmpty, member, get, getKey, size, any, all
     , keys, values, toList, fromList
-    , map, foldl, foldr, filter, partition
-    , union, intersect, diff, merge
+    , map, foldl, foldr, filter, partition, filterMap
+    , union, intersect, diff, merge, groupBy
     , toDict
     , decode, decode_, decodeList, encode, encodeList
     )
@@ -70,7 +70,7 @@ and other are types within the constructor and you're good to go.
 
 # Query
 
-@docs isEmpty, member, get, getKey, size
+@docs isEmpty, member, get, getKey, size, any, all
 
 
 # Lists
@@ -80,12 +80,12 @@ and other are types within the constructor and you're good to go.
 
 # Transform
 
-@docs map, foldl, foldr, filter, partition
+@docs map, foldl, foldr, filter, partition, filterMap
 
 
 # Combine
 
-@docs union, intersect, diff, merge
+@docs union, intersect, diff, merge, groupBy
 
 
 # Dict
@@ -631,3 +631,146 @@ encodeList encodeF =
 decodeList : (k -> comparable) -> Decode.Decoder ( k, v ) -> Decode.Decoder (AnyDict comparable k v)
 decodeList keyToComparable =
     Decode.map (fromList keyToComparable) << Decode.list
+
+
+{-| Takes a key-fn and a list.
+Creates an `AnyDict` which maps the key to a list of matching elements.
+-}
+groupBy : (value -> key) -> (key -> comparable) -> List value -> AnyDict comparable key (List value)
+groupBy toKey keyToComparable list =
+    List.foldr
+        (\x acc ->
+            update
+                (toKey x)
+                (\maybeValues ->
+                    maybeValues
+                        |> Maybe.map ((::) x)
+                        |> Maybe.withDefault [ x ]
+                        |> Just
+                )
+                acc
+        )
+        (empty keyToComparable)
+        list
+
+
+{-| Find out if there is any instance of something in a Dictionary.
+
+    type Animal = Cat | Mouse | Dog
+
+    animalToInt : Animal -> Int
+    animalToInt animal =
+        case animal of
+            Cat -> 0
+            Mouse -> 1
+            Dog -> 2
+
+    animals : AnyDict Int Animal String
+    animals =
+        [ (Cat, "Tom"), (Mouse, "Jerry") ]
+            |> fromList animalToInt
+
+    isACat : Animal -> String -> Bool
+    isACat animal _ =
+        case animal of
+            Cat -> True
+            _ -> False
+
+    any isACat animals
+    --> True
+
+-}
+any : (k -> v -> Bool) -> AnyDict comparable k v -> Bool
+any predicate dict =
+    foldl
+        (\k v acc -> acc || predicate k v)
+        False
+        dict
+
+
+{-| Find out if all instances of a Dictionary match a predicate.
+
+    type Animal = Cat | Mouse | Dog
+
+    animalToInt : Animal -> Int
+    animalToInt animal =
+        case animal of
+            Cat -> 0
+            Mouse -> 1
+            Dog -> 2
+
+    animals : AnyDict Int Animal String
+    animals =
+        [ (Cat, "Tom"), (Mouse, "Jerry") ]
+            |> fromList animalToInt
+
+    aristocats : AnyDict Int Animal String
+    aristocats =
+        [ (Cat, "Marie"), (Cat, "Duchess"), (Cat, "Toulouse"), (Cat, "Berlioz") ]
+            |> fromList animalToInt
+
+    isACat : Animal -> String -> Bool
+    isACat animal _ =
+        case animal of
+            Cat -> True
+            _ -> False
+
+    all isACat animals
+    --> False
+
+    all isACat aristocats
+    --> True
+
+-}
+all : (k -> v -> Bool) -> AnyDict comparable k v -> Bool
+all predicate dict =
+    foldl
+        (\k v acc -> acc && predicate k v)
+        True
+        dict
+
+
+{-| Find out if all instances of a Dictionary match a predicate.
+
+    type Animal = Cat | Mouse | Dog
+
+    animalToInt : Animal -> Int
+    animalToInt animal =
+        case animal of
+            Cat -> 0
+            Mouse -> 1
+            Dog -> 2
+
+    animals : AnyDict Int Animal String
+    animals =
+        [ (Cat, "Tom"), (Mouse, "Jerry") ]
+            |> fromList animalToInt
+
+    onlyTom : AnyDict Int Animal String
+    onlyTom =
+        [ (Cat, "Tom") ]
+            |> fromList animalToInt
+
+    getCatName : Animal -> String -> Maybe String
+    getCatName animal name =
+        case animal of
+            Cat -> Just name
+            _ -> Nothing
+
+    filterMap getCatName animals == onlyTom
+    --> True
+
+-}
+filterMap : (k -> v1 -> Maybe v2) -> AnyDict comparable k v1 -> AnyDict comparable k v2
+filterMap f dict =
+    foldl
+        (\k v acc ->
+            case f k v of
+                Just newVal ->
+                    insert k newVal acc
+
+                Nothing ->
+                    acc
+        )
+        (removeAll dict)
+        dict
