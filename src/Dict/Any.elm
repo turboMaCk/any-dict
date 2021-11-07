@@ -730,7 +730,7 @@ all predicate dict =
         dict
 
 
-{-| Filter out certain values. You can combine filter and map with this one function.
+{-| Apply a function that may or may not succeed to all entries in a dictionary, but only keep the successes.
 
     type Animal = Cat | Mouse | Dog
 
