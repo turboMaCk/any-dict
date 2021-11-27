@@ -688,7 +688,7 @@ any predicate dict =
         dict
 
 
-{-| Find out if all instances of a Dictionary match a predicate.
+{-| Find if all key value paris in Dictionary match a predicate.
 
     type Animal = Cat | Mouse | Dog
 
@@ -706,7 +706,7 @@ any predicate dict =
 
     aristocats : AnyDict Int Animal String
     aristocats =
-        [ (Cat, "Marie"), (Cat, "Duchess"), (Cat, "Toulouse"), (Cat, "Berlioz") ]
+        [ (Cat, "Marie") ]
             |> fromList animalToInt
 
     isACat : Animal -> String -> Bool
