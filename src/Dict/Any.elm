@@ -393,7 +393,7 @@ intersect (AnyDict inner) (AnyDict { dict }) =
 
 {-| Keep a key-value pair when its key does not appear in the second dictionary.
 -}
-diff : AnyDict comparable k v -> AnyDict comparable k v -> AnyDict comparable k v
+diff : AnyDict comparable k a -> AnyDict comparable k b -> AnyDict comparable k a
 diff (AnyDict inner) (AnyDict { dict }) =
     AnyDict { inner | dict = Dict.diff inner.dict dict }
 
